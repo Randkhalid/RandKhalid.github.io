@@ -1,5 +1,5 @@
 # My Portfolio
-<a href="https:RandKhalid.github.io"> <img src="my portfolio img.png"></a>
+<a href="https://RandKhalid.github.io/"> <img src="my portfolio img.png"></a>
 This is my Github Main Page showing about me and my projects.
 
 I used Bootstrap CSS framework for my portfolio page.
