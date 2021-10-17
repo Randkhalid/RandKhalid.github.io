@@ -1,89 +1,43 @@
-var map;
+let map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11'
+    center: [-71.091542, 42.358862],
+    zoom: 14,
+    });
+    
 
-var markers = [];
-const accessToken = 'pk.eyJ1IjoicmFuZGtoIiwiYSI6ImNrbTNkdmgzdjJnZ3oyd282Y3liM2lyazkifQ.54h1QVV-AlfWPLukkFHfmg';
+let followmarker = [];
+mapboxgl.accessToken = 'pk.eyJ1IjoicmFuZGtoIiwiYSI6ImNrdXZlbHpycDA1aDYyb21yb2VtcDRhYW4ifQ.Ba2SkZq-Kwnggn_atG2XBQ';
+async function run() {
+    const locations = await getBusLocations();
+    let latLong = [];
+    latLong.push(locations[0].attributes.longitude); //this will push the json data of longitude in latLong Array
+    latLong.push(locations[0].attributes.latitude); //this will push the json data of latitude in latLong Array
+  
+    // Do not switch this two lines, it will affect the centering of the map
+    followMarker.push(locations[0].attributes.longitude);
+    followMarker.push(locations[0].attributes.latitude); //this will push the json data of longitude in latLong Array
+  
+    new mapboxgl.Marker({ color: "red" }).setLngLat(latLong).addTo(map);
+  
+    // logs the latitude and longitude of the marker
+    console.log(new Date());
+    console.log(latLong);
+  
+    setTimeout(run, 6000);
+  }
+  
+  async function getBusLocations() {
+    const url = "https://api-v3.mbta.com/vehicles?filter[route]=1&include=trip";
+    //   const url = "https://cdn.mbta.com/realtime/VehiclePositions_enhanced.json";
 
-// load map
-function init(){
-var myOptions = {
-    zoom      : 15,
-    center    : { lat:42.353350,lng:-71.091525},
-    mapTypeId : google.maps.MapTypeId.ROADMAP
-};
-var element = document.getElementById('map');
-  map = new google.maps.Map(element, myOptions);
-  addMarkers();
-}
-
-// Add bus markers to map
-async function addMarkers(){
-// get bus data
-var locations = await getBusLocations();
-
-// loop through data, add bus markers
-locations.forEach(function(bus){
-    var marker = getMarker(bus.id);		
-    if (marker){
-        moveMarker(marker,bus);
-    }
-    else{
-        addMarker(bus);			
-    }
-});
-
-// timer
-console.log(new Date());
-setTimeout(addMarkers,15000);
-}
-
-// Request bus data from MBTA
-async function getBusLocations(){
-var url = 'https://api-v3.mbta.com/vehicles?api_key=ca34f7b7ac8a445287cab52fb451030a&filter[route]=1&include=trip';	
-var response = await fetch(url);
-var json     = await response.json();
-return json.data;
-}
-
-function addMarker(bus){
-var icon = getIcon(bus);
-var marker = new google.maps.Marker({
-    position: {
-        lat: bus.attributes.latitude, 
-        lng: bus.attributes.longitude
-    },
-    zoom: 20,
-    map: map,
-    icon: icon,
-    id: bus.id
-});
-markers.push(marker);
-}
-
-function getIcon(bus){
-// select icon based on bus direction
-if (bus.attributes.direction_id === 0) {
-    return 'red.png';
-}
-return 'blue.png';	
-}
-
-function moveMarker(marker,bus) {
-// change icon if bus has changed direction
-var icon = getIcon(bus);
-marker.setIcon(icon);
-
-// move icon to new lat/lon
-marker.setPosition( {
-    lat: bus.attributes.latitude, 
-    lng: bus.attributes.longitude
-});
-}
-
-function getMarker(id){
-var marker = markers.find(function(item){
-    return item.id === id;
-});
-return marker;
-}
-
-window.onload = init;
+    //   "https://api-v3.mbta.com/trips/%22job%22?fields%5Btrip%5D=%22vehicle%22&include=%22route%22";
+   
+    const response = await fetch(url);
+    const json = await response.json();
+  
+    return json.data;
+  }
+  
+  run();
+  console.log(mapboxgl.Map.center);
