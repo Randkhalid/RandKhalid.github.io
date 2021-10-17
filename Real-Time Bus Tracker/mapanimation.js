@@ -1,43 +1,69 @@
-let map = new mapboxgl.Map({
-    container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v11'
-    center: [-71.091542, 42.358862],
-    zoom: 14,
-    });
-    
-
-let followmarker = [];
 mapboxgl.accessToken = 'pk.eyJ1IjoicmFuZGtoIiwiYSI6ImNrdXZlbHpycDA1aDYyb21yb2VtcDRhYW4ifQ.Ba2SkZq-Kwnggn_atG2XBQ';
-async function run() {
-    const locations = await getBusLocations();
-    let latLong = [];
-    latLong.push(locations[0].attributes.longitude); //this will push the json data of longitude in latLong Array
-    latLong.push(locations[0].attributes.latitude); //this will push the json data of latitude in latLong Array
-  
-    // Do not switch this two lines, it will affect the centering of the map
-    followMarker.push(locations[0].attributes.longitude);
-    followMarker.push(locations[0].attributes.latitude); //this will push the json data of longitude in latLong Array
-  
-    new mapboxgl.Marker({ color: "red" }).setLngLat(latLong).addTo(map);
-  
-    // logs the latitude and longitude of the marker
-    console.log(new Date());
-    console.log(latLong);
-  
-    setTimeout(run, 6000);
-  }
-  
-  async function getBusLocations() {
-    const url = "https://api-v3.mbta.com/vehicles?filter[route]=1&include=trip";
-    //   const url = "https://cdn.mbta.com/realtime/VehiclePositions_enhanced.json";
 
-    //   "https://api-v3.mbta.com/trips/%22job%22?fields%5Btrip%5D=%22vehicle%22&include=%22route%22";
-   
-    const response = await fetch(url);
-    const json = await response.json();
-  
-    return json.data;
+  let map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v11',
+        center: [-71.097589, 42.352653],
+        zoom: 13
+    });
+
+//the markers global variable
+let currentMarkers = [];
+
+async function run(){
+
+    // get bus data    
+	const locations = await getBusLocations();
+	console.log(new Date());
+	console.log(locations);
+  //An array of array. Show the longitude and latitude of the different bus lines
+  busLocalisations = [];
+
+  //go through the data to check each bus longitude and latitude
+  for (let element of locations) {
+    //This array will host the coordinate for one line and be reseted for each line.
+    localisation = [];
+    localisation.push(element.attributes.longitude);
+    localisation.push(element.attributes.latitude);
+    busLocalisations.push(localisation)
+  };
+
+  makeMarker(busLocalisations);
+
+  // timer
+	setTimeout(run, 15000);
+}
+
+// Request bus data from MBTA
+async function getBusLocations(){
+	const url = 'https://api-v3.mbta.com/vehicles?filter[route]=1&include=trip';
+	const response = await fetch(url);
+	const json     = await response.json();
+	return json.data;
+}
+
+//This function create a marker for each item of the busLocalisations array
+let makeMarker = (busLocalisations) => {
+    //remove previous markers in order to show new ones afterwards :
+    if (currentMarkers!==null) {
+        for (let i = currentMarkers.length - 1; i >= 0; i--) {
+          currentMarkers[i].remove();
+        }
+    }
+
+console.log(currentMarkers)
+
+    markerNum = []
+    for (let i = 0; i < busLocalisations.length; i++) {
+      markerNum[i] = new mapboxgl.Marker()
+        .setLngLat(busLocalisations[i])
+        .addTo(map)
+      // by adding each marker to a global variable, you 
+      //can then delete then when you refresh the run function.  
+      currentMarkers.push(markerNum[i])
+    }
   }
-  
-  run();
-  console.log(mapboxgl.Map.center);
+
+if (typeof module !== 'undefined') {
+    module.exports = { run };
+}
