@@ -1,69 +1,36 @@
 mapboxgl.accessToken = 'pk.eyJ1IjoicmFuZGtoIiwiYSI6ImNrdXZlbHpycDA1aDYyb21yb2VtcDRhYW4ifQ.Ba2SkZq-Kwnggn_atG2XBQ';
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v11',
+  center: [-71.104081, 42.365554],
+  zoom: 14
+});
 
-  let map = new mapboxgl.Map({
-        container: 'map',
-        style: 'mapbox://styles/mapbox/streets-v11',
-        center: [-71.097589, 42.352653],
-        zoom: 13
-    });
+var marker = new mapboxgl.Marker()
+.setLngLat([-71.092761, 42.357575])
+.addTo(map);
 
-//the markers global variable
-let currentMarkers = [];
+const busStops = [
+[-71.093729, 42.359244], 
+[-71.094915, 42.360175],
+[-71.095800, 42.360698],
+[-71.099558, 42.362953],
+[-71.103476, 42.365248],
+[-71.106067, 42.366806],
+[-71.108717, 42.368355],
+[-71.110799, 42.369192],
+[-71.113095, 42.370218],
+[-71.115476, 42.372085],
+[-71.117585, 42.373016],
+[-71.118625, 42.374863]
+];
 
-async function run(){
-
-    // get bus data    
-	const locations = await getBusLocations();
-	console.log(new Date());
-	console.log(locations);
-  //An array of array. Show the longitude and latitude of the different bus lines
-  busLocalisations = [];
-
-  //go through the data to check each bus longitude and latitude
-  for (let element of locations) {
-    //This array will host the coordinate for one line and be reseted for each line.
-    localisation = [];
-    localisation.push(element.attributes.longitude);
-    localisation.push(element.attributes.latitude);
-    busLocalisations.push(localisation)
-  };
-
-  makeMarker(busLocalisations);
-
-  // timer
-	setTimeout(run, 15000);
-}
-
-// Request bus data from MBTA
-async function getBusLocations(){
-	const url = 'https://api-v3.mbta.com/vehicles?filter[route]=1&include=trip';
-	const response = await fetch(url);
-	const json     = await response.json();
-	return json.data;
-}
-
-//This function create a marker for each item of the busLocalisations array
-let makeMarker = (busLocalisations) => {
-    //remove previous markers in order to show new ones afterwards :
-    if (currentMarkers!==null) {
-        for (let i = currentMarkers.length - 1; i >= 0; i--) {
-          currentMarkers[i].remove();
-        }
-    }
-
-console.log(currentMarkers)
-
-    markerNum = []
-    for (let i = 0; i < busLocalisations.length; i++) {
-      markerNum[i] = new mapboxgl.Marker()
-        .setLngLat(busLocalisations[i])
-        .addTo(map)
-      // by adding each marker to a global variable, you 
-      //can then delete then when you refresh the run function.  
-      currentMarkers.push(markerNum[i])
-    }
-  }
-
-if (typeof module !== 'undefined') {
-    module.exports = { run };
+let counter = 0;
+function move(){
+setTimeout(()=>{
+if (counter >= busStops.length) return;
+marker.setLngLat(busStops[counter]);
+counter++;
+move();
+},1000); 
 }
